@@ -1,0 +1,46 @@
+{
+  "name": "experimental-3d-terrain-generator",
+  "version": "1.0.1",
+  "description": "a node package for generating terrain geometry from heightmaps and densitymaps",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/noahhorlacher/experimental-3d-terrain-generator.git"
+  },
+  "keywords": [
+    "terrain",
+    "generator",
+    "generation",
+    "voxel",
+    "marching-cubes",
+    "marching",
+    "cubes",
+    "3d",
+    "geometry",
+    "heightmap",
+    "heightmaps",
+    "density",
+    "map",
+    "densitymap",
+    "height",
+    "densitymaps"
+  ],
+  "author": "Noah Horlacher",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/noahhorlacher/experimental-3d-terrain-generator/issues"
+  },
+  "homepage": "https://github.com/noahhorlacher/experimental-3d-terrain-generator#readme",
+  "dependencies": {
+    "data-uri-to-buffer": "^3.0.1",
+    "floodfill": "^2.1.1",
+    "isosurface-generator": "^2.0.1",
+    "jimp": "^0.13.0",
+    "ndarray": "^1.0.19",
+    "three": "^0.117.1",
+    "tumult": "^3.0.14"
+  }
+}

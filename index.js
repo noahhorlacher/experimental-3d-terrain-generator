@@ -7,6 +7,16 @@ const THREE = require('three')
 const isosurface = require('isosurface-generator')
 
 class Terrain {
+    /**
+     * 
+     * @param {Number} width The width of the terrain. Heightmaps will automatically be resized to fit
+     * @param {Number} plateau_height Height of the plateau of the geometry
+     * @param {Number} terrain_height Height of the generated terrain on top of the plateau geometry 
+     * @param {Number} depth Height of the heightmap/depth of the geometry
+     * @param {Number} noise_scale Scale of the noise for terrain generation
+     * @param {Number} iso Threshold for when a voxel counts as matter (0.0 - 1.0)
+     * @param {HTMLCanvasElement} display_element A canvas to display the different processing steps on
+     */
     constructor(width = 512, plateau_height = 10, terrain_height = 40, depth = 512, noise_scale = 0.01, iso = 0.2, display_element = null) {
         // Width of the terrain
         this.width = width
@@ -35,7 +45,14 @@ class Terrain {
         this.absolute_height = plateau_height + terrain_height
     }
 
-    image_to_heightmap(path = null, buffer = null) {
+    /**
+     * Converts a picture of a landmass outline to a heightmap (optimally bold black lines on white surface)
+     * 
+     * @param {String} path Path to the heightmap.
+     * @param {Uint8ClampedArray} buffer A buffer instead of a path for the image
+     * @returns {Promise} Resolves with the heightmap
+     */
+    snapshot_to_heightmap(path = null, buffer = null) {
         return new Promise((resolve) => {
             // Load the image either from buffer or a path
             let __img = buffer ? buffer : path
@@ -148,9 +165,14 @@ class Terrain {
         })
     }
 
+    /**
+     * Converts a heightmap to a densitymap/3d voxel grid
+     * 
+     * @param {Array} heightmap A 2d array of values from 0.0 - 1.0
+     * @returns {ndarray} 3d array (x, y, z) of floats 0.0 - 1.0
+     */
     heightmap_to_densitymap(heightmap = this.heightmap) {
         return new Promise(resolve => {
-            // Convert 2d heightmap from canvas to 3d voxel grid
             this.densitymap = ndarray(new Float32Array(this.width * (this.absolute_height + 1) * this.depth), [this.width, this.absolute_height + 1, this.depth])
             let noise = new tumult.Perlin3()
 
@@ -159,10 +181,11 @@ class Terrain {
                     for (let z = 0; z < this.depth; z++) {
                         if (y < this.plateau_height) {
                             // Generate plateau
-                            this.densitymap.set(x, y, z, this.heightmap[x, z])
+                            let mask = heightmap[x, z] > 0.0 ? 1.0 : 0.0
+                            this.densitymap.set(x, y, z, maskify)
                         } else if (y >= this.plateau_height) {
                             // mask perlin noise to generate surface terrain
-                            let mask = this.heightmap[x][z]
+                            let mask = heightmap[x][z]
 
                             let noise_val = noise.octavate(4, x * this.noise_scale, y * this.noise_scale, z * this.noise_scale)
                             let height_multiplier = 1.0 - ((y - this.plateau_height) / this.terrain_height)
@@ -182,6 +205,12 @@ class Terrain {
         })
     }
 
+    /**
+     * Converts a densitymap/3d voxel grid to a geometry object
+     * 
+     * @param {ndarray} densitymap A 3d array of density 0.0 - 1.0. Determines where mass goes
+     * @returns {Object} An object containing geometry information (vertices and faces)
+     */
     densitymap_to_geometry(densitymap = this.densitymap) {
         return new Promise(resolve => {
             let __mesh
@@ -205,6 +234,12 @@ class Terrain {
         })
     }
 
+    /**
+     * Converts the geometry information to a threejs geometry object
+     * 
+     * @param {Object} geometry The geometry object
+     * @returns {THREE.Geometry} A threejs geometry object
+     */
     to_threejs(geometry = this.geometry) {
         let threejs_geometry = new THREE.Geometry()
 
@@ -221,6 +256,11 @@ class Terrain {
         return threejs_geometry
     }
 
+    /**
+     * 
+     * @param {*} path 
+     * @param {*} buffer 
+     */
     from_image = async function (path = null, buffer = null) {
         return new Promise(async (resolve) => {
             let __img = buffer ? buffer : path

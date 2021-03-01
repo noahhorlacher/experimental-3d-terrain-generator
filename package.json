@@ -40,7 +40,7 @@
     "isosurface-generator": "^2.0.1",
     "jimp": "^0.13.0",
     "ndarray": "^1.0.19",
-    "three": "^0.117.1",
+    "three": "^0.125.0",
     "tumult": "^3.0.14"
   }
 }
